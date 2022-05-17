@@ -1,5 +1,6 @@
 library(dplyr)
-#read data in
+
+#read required data into R (adjust file paths as necessary)
 test_X_txt <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
 test_y_txt <- read.table("./UCI HAR Dataset/test/y_test.txt", header = FALSE)
 test_subjects <- read.table("./UCI HAR Dataset/test/subject_test.txt", header = FALSE)
@@ -11,8 +12,8 @@ train_subjects <- read.table("./UCI HAR Dataset/train/subject_train.txt", header
 columns <- read.table("./UCI HAR Dataset/features.txt", header = FALSE)
 activities <- read.table("./UCI HAR Dataset/activity_labels.txt", header = FALSE)
 
-#transform headings into a row
-column_headings <- t(columns$V2)
+#column_headings to be added to the data
+column_headings <- columns$V2
 
 #add headings to data
 colnames(test_X_txt) <- column_headings
@@ -22,7 +23,10 @@ colnames(train_y_txt) <- c("Activity")
 colnames(test_subjects) <- c("Subject")
 colnames(train_subjects) <- c("Subject")
 
-#decode activities in the labels
+#decode activities in the labels for both the testing and training data by 
+#looking for the numeric code from the data in the Activity list and replacing 
+#numeric code with this value
+
 for (x in 1:length(test_y_txt$Activity)) {
   test_y_txt$Activity[x] <- activities[test_y_txt$Activity[x],2]
 }
@@ -30,19 +34,20 @@ for (x in 1:length(train_y_txt$Activity)) {
   train_y_txt$Activity[x] <- activities[train_y_txt$Activity[x],2]
 }
 
-#Combine columns
+#Combine columns from Activity and Subject with the main data
 labelled_test_data <- cbind(test_y_txt, test_subjects, test_X_txt)
 labelled_train_data <- cbind(train_y_txt, train_subjects, train_X_txt)
 
-#Combine test and train
+#Combine test and training data records
 test_train <- rbind(labelled_test_data, labelled_train_data)
 
+#Create condensed dataset with only the measurements relating to mean and standard deviation
 condensed <- select(test_train, c('Activity',
                                   'Subject',
                                   contains('mean()'),
                                   contains('std()')
                                   ))
-
+#Creating the required column order so that measurements are displayed in a sensible order
 col_order <- c('Activity'
               ,'Subject'
               ,'tBodyAcc-mean()-X'
@@ -112,6 +117,9 @@ col_order <- c('Activity'
               ,'fBodyBodyGyroJerkMag-mean()'
               ,'fBodyBodyGyroJerkMag-std()')
 
+#Sets the column order specified above
 condensed <- condensed[,col_order]
 
+#Groups the condensed data by Activity and Subject, with an average value for each 
+#measurement in each group
 tidy_data <- condensed %>% group_by(Activity, Subject) %>% summarise_all(list(mean))
