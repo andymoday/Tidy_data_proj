@@ -26,7 +26,7 @@ Each row displays the average values of each measurement for that Activity/Subje
 
 
 
-The analysis script 'tidy_data_proj.R' works as follows:
+The analysis script 'run_analysis.R' works as follows:
 
 - Reads the required data into R using the read.table("FILE", head = FALSE) command (datasets, subjects, and labels for both the test and training data, as well as a key to the activities and measured variables).
 
